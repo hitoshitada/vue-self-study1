@@ -1,0 +1,61 @@
+/*Promise
+     function getpagein(){
+       return new Promise(function(resolve, recject){   
+    let Ref=firebase.database().ref('fire-memo');
+    let pagein =1;
+    Ref.once('value',function(snapshot){
+    let data = snapshot.val();
+   
+    Object.keys(data).forEach(function (key){
+      if (key>pagein){
+        pagein = key;
+        console.log(pagein); 
+      };   
+       });
+     console.log(pagein);
+       resolve(pagein);  
+    });
+       });
+     }
+    
+    
+    //async & await
+    const getpagein = function() {
+     return new Promise((resolve) => { 
+    let Ref=firebase.database().ref('fire-memo');
+    let pagein =1;
+    Ref.once('value',function(snapshot){
+    let data = snapshot.val();
+   
+    Object.keys(data).forEach(function (key){
+      if (key>pagein){
+        pagein = key;
+        console.log(pagein); 
+      };   
+       });
+     console.log(pagein);
+       resolve(pagein);  
+    });
+     });
+     };
+    async function useAwait(){
+      const pagein = await getpagein();
+      console.log(pagein);
+      //console.log(this.$store.state.maxpage);
+      return pagein;
+    }
+     var useAwaitexec=useAwait();
+     console.log(useAwaitexec);
+     console.log(this.$store.state.maxpage);
+
+     /*
+     var usepromise = function(){getpagein().then(function(pagein){
+       console.log(pagein);
+       return function(){
+       console.log(pagein);
+       console.log(this.$store.state.maxpage);
+     }})};
+    
+      var timer = usepromise();
+  
+   */

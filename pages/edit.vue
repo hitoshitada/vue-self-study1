@@ -6,13 +6,12 @@
       <hr>  
       <table>
 　　　　　<tr>
-          <td @click="this.pageMinus">prev</td>
+          <td @click="this.dispMinus">prev</td>
           <td>{{ pagecount }}</td>
           <td @click="this.dispPlus">next</td>
           <td @click="this.pageReset">Reset</td>
           <td @click="this.add">save</td>
           <td>{{ maxpagedata }}</td>
-          <td>{{ maxpagedata2 }}</td>
        </tr>
       </table>
       <table>
@@ -57,9 +56,16 @@ import { mapState, mapActions ,mapMutations } from 'vuex';
     get(){return this.$store.state.maxpage;
     },
     set(maxpagedata) {this.$store.dispatch('pageMax',maxpagedata)},
+
+
+
+
+
   },
   
-  //created:
+  created: function(){
+  this.pageDisp();
+  },
       
     
   
@@ -71,12 +77,10 @@ import { mapState, mapActions ,mapMutations } from 'vuex';
 
     dispPlus: function(){
 
-    //this.maxpagedata=1;
-    //this.pagePlus;
     let Ref=firebase.database().ref('fire-memo');
     let pagein =1;
    
-    let retpage = () => {
+    let retMaxpage = () => {
     let self = this;
     let maxpage=0;
     Ref.orderByKey().limitToLast(1).once('value',function(snapshot){
@@ -86,20 +90,36 @@ import { mapState, mapActions ,mapMutations } from 'vuex';
     self.maxpagedata=maxpage;
     self.$store.dispatch('pageMax',self.maxpagedata)
     console.log(self.$store.state.maxpage);
-    
     });
     };
-    
-   
-    retpage();
-    console.log(this.maxpagedata);
-    this.$store.dispatch('pageMax',this.maxpagedata)
-    console.log(this.$store.state.maxpage);
-    this.pagePlus;
-    //console.log(this.$store.state.maxpage);
-    
+    retMaxpage();
+    this.pagePlus();
+    this.pageDisp();
+    //console.log(this.$store.state.maxpage);    
     },
+
+    dispMinus: function(){
+      this.pageMinus();
+      this.pageDisp();
+    },
+
     
+　　pageDisp: function(){
+     let Ref=firebase.database().ref('fire-memo'); 
+     let retpagedata = () => {
+      let self = this;
+      let page = self.$store.state.pagecount;
+      Ref.orderByKey().equalTo(String(page)).once('value',function(snapshot){
+      let data = snapshot.val();
+      let obj = Object.values(data);
+      //console.log(obj);
+      self.content=obj[0].msg;
+      self.title=obj[0].title;
+      });
+     };
+      retpagedata();
+    },
+
 
     add: function(){
     return;

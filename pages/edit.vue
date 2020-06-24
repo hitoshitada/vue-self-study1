@@ -9,7 +9,7 @@
           <td @click="this.dispMinus">prev</td>
           <td>{{ pagecount }}</td>
           <td @click="this.dispPlus">next</td>
-          <td @click="this.pageReset">Reset</td>
+          <td @click="this.dispReset">Reset</td>
           <td @click="this.add">save</td>
           <td>{{ maxpagedata }}</td>
        </tr>
@@ -46,6 +46,8 @@ import { mapState, mapActions ,mapMutations } from 'vuex';
     return{
       title: "",
       content: "",
+      titleSave: "",
+      contentSave: "",
       maxpagedata: 0,
       maxpagedata2:0,
    };
@@ -57,14 +59,12 @@ import { mapState, mapActions ,mapMutations } from 'vuex';
     },
     set(maxpagedata) {this.$store.dispatch('pageMax',maxpagedata)},
 
-
-
-
-
   },
   
   created: function(){
-  this.pageDisp();
+      this.getMaxpage();
+      this.pageDisp();
+
   },
       
     
@@ -76,7 +76,19 @@ import { mapState, mapActions ,mapMutations } from 'vuex';
        ...mapMutations(['pegeMaxset']),
 
     dispPlus: function(){
+    
+    if ((this.title !== this.titleSave) || (this.content !== this.contentSave)){   
+    var result = window.confirm('データが編集されていますがページ移動してもいいですか？');   
+    if (result==false) {
+ 　　　　return
+   }
+  }
+    this.getMaxpage();
+    this.pagePlus();
+    this.pageDisp();
+    },
 
+   getMaxpage: function(){
     let Ref=firebase.database().ref('fire-memo');
     let pagein =1;
    
@@ -93,18 +105,35 @@ import { mapState, mapActions ,mapMutations } from 'vuex';
     });
     };
     retMaxpage();
-    this.pagePlus();
-    this.pageDisp();
-    //console.log(this.$store.state.maxpage);    
-    },
 
+
+
+   },
+  
     dispMinus: function(){
+      if ((this.title !== this.titleSave) || (this.content !== this.contentSave)){   
+    var result = window.confirm('データが編集されていますがページ移動してもいいですか？');   
+    if (result==false) {
+ 　　　　return
+   }
+  }
       this.pageMinus();
       this.pageDisp();
     },
-
+    
+    dispReset: function(){
+       if ((this.title !== this.titleSave) || (this.content !== this.contentSave)){   
+    var result = window.confirm('データが編集されていますがページ移動してもいいですか？');   
+    if (result==false) {
+ 　　　　return
+   }
+  }
+       this.pageReset();
+       this.pageDisp();
+    },
     
 　　pageDisp: function(){
+  
      let Ref=firebase.database().ref('fire-memo'); 
      let retpagedata = () => {
       let self = this;
@@ -115,6 +144,8 @@ import { mapState, mapActions ,mapMutations } from 'vuex';
       //console.log(obj);
       self.content=obj[0].msg;
       self.title=obj[0].title;
+      self.contentSave=self.content;
+      self.titleSave=self.title;
       });
      };
       retpagedata();

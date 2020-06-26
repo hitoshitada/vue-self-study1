@@ -10,7 +10,7 @@
           <td>{{ pagecount }}</td>
           <td @click="this.dispPlus">next</td>
           <td @click="this.dispReset">Reset</td>
-          <td @click="this.add">save</td>
+          <td @click="this.saveData">save</td>
           <td>{{ maxpagedata }}</td>
        </tr>
       </table>
@@ -78,7 +78,7 @@ import { mapState, mapActions ,mapMutations } from 'vuex';
     dispPlus: function(){
     
     if ((this.title !== this.titleSave) || (this.content !== this.contentSave)){   
-    var result = window.confirm('データが編集されていますがページ移動してもいいですか？');   
+    let result = window.confirm('データが編集されていますがページ移動してもいいですか？');   
     if (result==false) {
  　　　　return
    }
@@ -112,7 +112,7 @@ import { mapState, mapActions ,mapMutations } from 'vuex';
   
     dispMinus: function(){
       if ((this.title !== this.titleSave) || (this.content !== this.contentSave)){   
-    var result = window.confirm('データが編集されていますがページ移動してもいいですか？');   
+    let result = window.confirm('データが編集されていますがページ移動してもいいですか？');   
     if (result==false) {
  　　　　return
    }
@@ -123,7 +123,7 @@ import { mapState, mapActions ,mapMutations } from 'vuex';
     
     dispReset: function(){
        if ((this.title !== this.titleSave) || (this.content !== this.contentSave)){   
-    var result = window.confirm('データが編集されていますがページ移動してもいいですか？');   
+    let result = window.confirm('データが編集されていますがページ移動してもいいですか？');   
     if (result==false) {
  　　　　return
    }
@@ -152,9 +152,26 @@ import { mapState, mapActions ,mapMutations } from 'vuex';
     },
 
 
-    add: function(){
-    return;
-    
+    saveData: function(){
+     let result = window.confirm('このページのデータをSAVEしてもいいですか？'); 
+     if (result==false) {
+ 　　　　return
+   　　}
+    　let Ref=firebase.database().ref('fire-memo'); 
+    　let self=this;
+      let d= new Date();
+      let dstr = d.getFullYear()+'-'+((d.getMonth)+1) + '-' + d.getDate + ' ' +d.getHours 
+      + ':'+d.getMinutes() + d.getSeconds();
+      let id = self.$store.state.pagecount;
+      let data = {
+        msg:this.content,
+        posted:dstr,
+        title:this.title,
+      };
+      firebase.database().ref('fire-memo/'+id).set(data);     
+      this.titleSave=this.title;
+      this.contentSave=this.content;
+
     },
     
     

@@ -6,12 +6,13 @@
       <hr>  
       <table>
 　　　　　<tr>
+           <td class="margin10"><nuxt-link to="/memotest">Go to List</nuxt-link></td>
           <td @click="this.dispMinus">prev</td>
           <td>{{ pagecount }}</td>
           <td @click="this.dispPlus">next</td>
           <td @click="this.dispReset">Reset</td>
-          <td @click="this.saveData">save</td>
-          <td>{{ maxpagedata }}</td>
+          <td @click="this.saveData">SaveData</td>
+          <td @click="this.addPage">AddPage</td>
        </tr>
       </table>
       <table>
@@ -98,16 +99,13 @@ import { mapState, mapActions ,mapMutations } from 'vuex';
     Ref.orderByKey().limitToLast(1).once('value',function(snapshot){
     let data = snapshot.val();
     maxpage = Object.keys(data)[0];
-    console.log(maxpage);
+    //console.log(maxpage);
     self.maxpagedata=maxpage;
-    self.$store.dispatch('pageMax',self.maxpagedata)
-    console.log(self.$store.state.maxpage);
+    self.$store.dispatch('pageMax',self.maxpagedata);
+    //console.log(self.$store.state.maxpage);
     });
     };
     retMaxpage();
-
-
-
    },
   
     dispMinus: function(){
@@ -158,11 +156,10 @@ import { mapState, mapActions ,mapMutations } from 'vuex';
  　　　　return
    　　}
     　let Ref=firebase.database().ref('fire-memo'); 
-    　let self=this;
       let d= new Date();
-      let dstr = d.getFullYear()+'-'+((d.getMonth)+1) + '-' + d.getDate + ' ' +d.getHours 
-      + ':'+d.getMinutes() + d.getSeconds();
-      let id = self.$store.state.pagecount;
+      let dstr = d.getFullYear()+'-'+("00"+(d.getMonth()+1)).slice(-2) + '-' + ("00"+d.getDate()).slice(-2) + ' ' +("00"+d.getHours()).slice(-2) 
+      + ':'+("00"+d.getMinutes()).slice(-2) + ':' + ("00"+d.getSeconds()).slice(-2);
+      let id = this.$store.state.pagecount;
       let data = {
         msg:this.content,
         posted:dstr,
@@ -173,7 +170,27 @@ import { mapState, mapActions ,mapMutations } from 'vuex';
       this.contentSave=this.content;
 
     },
-    
+    addPage: function(){
+      let result = window.confirm('新たなページを追加しますか？');
+      if (result==false){
+        return
+      }
+      let Ref=firebase.database().ref('fire-memo');
+      let d= new Date();
+      let dstr = d.getFullYear()+'-'+("00"+(d.getMonth()+1)).slice(-2) + '-' + ("00"+d.getDate()).slice(-2) + ' ' +("00"+d.getHours()).slice(-2) 
+      + ':'+("00"+d.getMinutes()).slice(-2) + ':' + ("00"+d.getSeconds()).slice(-2);
+      let id = parseInt(this.$store.state.maxpage)+1;
+      let data = {
+        msg:"message"+id,
+        posted:dstr,
+        title:"Title"+id,
+      };
+       firebase.database().ref('fire-memo/'+id).set(data);
+        this.$store.dispatch('pageinSetMaxpage',id);
+        this.getMaxpage();
+        this.pageDisp();
+
+    },
     
   
   }
@@ -212,6 +229,9 @@ pre{
   background-color: #efefef;
 }
 
+.margin10{
+    margin-left : 100px;
+}
 
 textarea{
   resize:none;

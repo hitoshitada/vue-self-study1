@@ -31,7 +31,18 @@ export const actions = {
         pageMax(context,pagein){
             context.commit('pageMaxset',pagein)
         },
-
+        pageinSetMaxpage(context,pagein){
+          context.commit('pageinSetMaxpage',pagein)
+        },
+        pageset(context,pagein){
+          context.commit('pageset',pagein)
+        },
+        pageIncrease(context,perpage){
+          context.commit('pageIncrease',perpage)
+        },
+        pageDecrease(context,perpage){
+          context.commit('pageDecrease',perpage)
+        },
         
       }     
 
@@ -46,12 +57,34 @@ export const mutations = {
     state.pagecount--;
     }
   },
+  pageIncrease(state,perpage){
+    if (state.pagecount+perpage>state.maxpage){
+      state.pagecount=state.maxpage;
+    } else {
+      state.pagecount=state.pagecount+perpage;
+    }
+  },
+  pageDecrease(state,perpage){
+    if (state.pagecount-perpage<1){
+      state.pagecount=1
+    } else {
+      state.pagecount=state.pagecount-perpage;
+    }
+  },
+  
   pageReset(state){
     state.pagecount=1;
+  },
+  pageset(state,pagein){
+    state.pagecount=pagein;
   },
   pageMaxset(state,pagein){
     state.maxpage=pagein;
   },
+  pageinSetMaxpage(state,pageid){
+    state.pagecount=pageid;
+ },
+
 
   setUser(state,user){
     state.status = "loggedIn"

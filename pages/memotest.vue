@@ -4,7 +4,7 @@
     <h1>{{title}}</h1>
     <p class="message">{{message}}</p>
     <div v-if="this.status">     
-       <nuxt-link to="/edit">Create New Page</nuxt-link>
+       <nuxt-link to="/edit">Go to Edit Page</nuxt-link>
       
         <table>
        <tr>
@@ -98,7 +98,7 @@ export default{
     let retMaxpage = () => {
     let self = this;
     let maxpage=0;
-    Ref.orderByKey().limitToLast(1).once('value',function(snapshot){
+    Ref.orderByChild('num').limitToLast(1).once('value',function(snapshot){
     let data = snapshot.val();
     maxpage = Object.keys(data)[0];
     //console.log(maxpage);
@@ -113,16 +113,67 @@ export default{
       pageRead: function(){
      //console.log(this.$store.state.maxpage);
      let Ref=firebase.database().ref('fire-memo'); 
+
      let retpagedata = () => {
       let self = this;
       let page = self.$store.state.pagecount;
-
-      Ref.orderByKey().startAt(String(page)).endAt(String(page+this.num_per_page-1)).once('value',function(snapshot){
-      let data = snapshot.val();
-      self.array_data = Object.values(data);
-      //console.log(self.array_data);
+      self.array_data=[];
+      let arraydata=[];
       
-      });
+    let readelement = (val1) => {
+     
+   
+      Ref.orderByChild('num').startAt(val1).endAt(val1).once('value',function(snapshot){
+      let getarraydata=Object.values(snapshot.val());
+      //page=page+1;
+       console.log(val1);
+      val1++;
+      console.log(getarraydata);
+      //console.log(val1);
+      //var promise1 = Promise.resolve([value[0],value[1]]);
+  　　 return ;
+      })
+      }
+    
+       var myPromise = Promise.resolve();
+      
+      
+      myPromise=myPromise.then(task1.bind(this,page)).then(task2).then(task2).then(task2).then(task2)// bindでtask1に引数iを渡す
+     
+
+
+// ループで実行する処理
+       function task1(val){ // 引数iを受け取る
+       return new Promise(function(resolve, reject) {
+    
+        Ref.orderByChild('num').startAt(val).endAt(val).once('value',function(snapshot){
+      let getarraydata=Object.values(snapshot.val());
+       console.log(val);
+       val++; 
+       console.log(getarraydata);
+       resolve([val,getarraydata]);
+    
+        })      
+      }); 
+     }
+      
+    function task2(val){ // 引数iを受け取る
+       return new Promise(function(resolve, reject) {
+    
+        Ref.orderByChild('num').startAt(val[0]).endAt(val[0]).once('value',function(snapshot){
+      let getarraydata=Object.values(snapshot.val());
+       console.log(val[0]);
+       val[0]++; 
+       
+       val[1]=val[1].concat(getarraydata);
+       console.log(val[1]);
+       resolve(val);
+       
+        })      
+      }); 
+     }
+      
+    
      };
       retpagedata();
     },

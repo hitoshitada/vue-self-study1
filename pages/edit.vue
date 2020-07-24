@@ -51,6 +51,7 @@ import { mapState, mapActions ,mapMutations } from 'vuex';
       contentSave: "",
       maxpagedata: 0,
       maxpagedata2:0,
+      dataflag:0,
    };
   },
   computed: mapState(['pagecount','status','maxpage']),  //pagecountを同じ変数でマッピングする
@@ -96,7 +97,7 @@ import { mapState, mapActions ,mapMutations } from 'vuex';
     let retMaxpage = () => {
     let self = this;
     let maxpage=0;
-    Ref.orderByKey().limitToLast(1).once('value',function(snapshot){
+    Ref.orderByChild('num').limitToLast(1).once('value',function(snapshot){
     let data = snapshot.val();
     maxpage = Object.keys(data)[0];
     //console.log(maxpage);
@@ -136,7 +137,7 @@ import { mapState, mapActions ,mapMutations } from 'vuex';
      let retpagedata = () => {
       let self = this;
       let page = self.$store.state.pagecount;
-      Ref.orderByKey().equalTo(String(page)).once('value',function(snapshot){
+      Ref.orderByChild('num').equalTo(page).once('value',function(snapshot){
       let data = snapshot.val();
       let obj = Object.values(data);
       //console.log(obj);
@@ -162,6 +163,7 @@ import { mapState, mapActions ,mapMutations } from 'vuex';
       let id = this.$store.state.pagecount;
       let data = {
         msg:this.content,
+        num:this.$store.state.pagecount,
         posted:dstr,
         title:this.title,
       };
@@ -182,10 +184,11 @@ import { mapState, mapActions ,mapMutations } from 'vuex';
       let id = parseInt(this.$store.state.maxpage)+1;
       let data = {
         msg:"message"+id,
+        num:id,
         posted:dstr,
         title:"Title"+id,
       };
-       firebase.database().ref('fire-memo/'+id).set(data);
+       firebase.database().ref('fire-memo/'+dstr).set(data);
         this.$store.dispatch('pageinSetMaxpage',id);
         this.getMaxpage();
         this.pageDisp();

@@ -99,9 +99,9 @@ import { mapState, mapActions ,mapMutations } from 'vuex';
     let maxpage=0;
     Ref.orderByChild('num').limitToLast(1).once('value',function(snapshot){
     let data = snapshot.val();
-    maxpage = Object.keys(data)[0];
-    //console.log(maxpage);
-    self.maxpagedata=maxpage;
+    maxpage = Object.values(data);
+    //console.log(maxpage[0].num);
+    self.maxpagedata=maxpage[0].num;
     self.$store.dispatch('pageMax',self.maxpagedata);
     //console.log(self.$store.state.maxpage);
     });

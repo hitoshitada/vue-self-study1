@@ -100,9 +100,9 @@ export default{
     let maxpage=0;
     Ref.orderByChild('num').limitToLast(1).once('value',function(snapshot){
     let data = snapshot.val();
-    maxpage = Object.keys(data)[0];
+    maxpage = Object.values(data);
     //console.log(maxpage);
-    self.maxpagedata=maxpage;
+    self.maxpagedata=maxpage[0].num;
     self.$store.dispatch('pageMax',self.maxpagedata);
     //console.log(self.$store.state.maxpage);
     });
@@ -135,40 +135,47 @@ export default{
       })
       }
     
-       var myPromise = Promise.resolve();
+      let myPromise = Promise.resolve();
+      myPromise=myPromise.then(task1.bind(this,page));
+      for(var i = 1; i <= 4; i++) {
+      myPromise = myPromise.then(task2);
+      };
+       myPromise.then(function(val) {
+       self.array_data=val[1];
+    });
       
-      
-      myPromise=myPromise.then(task1.bind(this,page)).then(task2).then(task2).then(task2).then(task2)// bindでtask1に引数iを渡す
+      //myPromise=myPromise.then(task1.bind(this,page)).then(task2).then(task2).then(task2).then(task2)// bindでtask1に引数iを渡す
      
 
 
 // ループで実行する処理
        function task1(val){ // 引数iを受け取る
        return new Promise(function(resolve, reject) {
-    
-        Ref.orderByChild('num').startAt(val).endAt(val).once('value',function(snapshot){
+      let a=0;      
+      Ref.orderByChild('num').startAt(val).endAt(val).once('value',function(snapshot){
       let getarraydata=Object.values(snapshot.val());
        console.log(val);
        val++; 
+       a=getarraydata[0].dataflag;
+
        console.log(getarraydata);
+       console.log(getarraydata[0].dataflag);
        resolve([val,getarraydata]);
-    
-        })      
+        })          
       }); 
      }
       
-    function task2(val){ // 引数iを受け取る
+      function task2(val){ // 引数iを受け取る
        return new Promise(function(resolve, reject) {
-    
+       let a=0;       
         Ref.orderByChild('num').startAt(val[0]).endAt(val[0]).once('value',function(snapshot){
       let getarraydata=Object.values(snapshot.val());
        console.log(val[0]);
-       val[0]++; 
-       
+       val[0]++;       
        val[1]=val[1].concat(getarraydata);
+       console.log(getarraydata[0].dataflag);
        console.log(val[1]);
-       resolve(val);
-       
+       resolve(val);       
         })      
       }); 
      }

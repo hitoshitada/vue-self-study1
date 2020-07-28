@@ -49,6 +49,7 @@ export default{
           page:0,
           num_per_page:5,
           array_data:[],
+          maxpagedata:0,
        };
      },
     computed: mapState(['pagecount','status','maxpage']),  
@@ -119,66 +120,168 @@ export default{
       let page = self.$store.state.pagecount;
       self.array_data=[];
       let arraydata=[];
-      
-    let readelement = (val1) => {
-     
-   
-      Ref.orderByChild('num').startAt(val1).endAt(val1).once('value',function(snapshot){
-      let getarraydata=Object.values(snapshot.val());
-      //page=page+1;
-       console.log(val1);
-      val1++;
-      console.log(getarraydata);
-      //console.log(val1);
-      //var promise1 = Promise.resolve([value[0],value[1]]);
-  　　 return ;
-      })
-      }
     
       let myPromise = Promise.resolve();
-      myPromise=myPromise.then(task1.bind(this,page));
-      for(var i = 1; i <= 4; i++) {
-      myPromise = myPromise.then(task2);
-      };
-       myPromise.then(function(val) {
+      myPromise=myPromise.then(task1.bind(this,page)).then(looper).then(looperUnit)
+      myPromise.then((val)=>{
        self.array_data=val[1];
-    });
-      
-      //myPromise=myPromise.then(task1.bind(this,page)).then(task2).then(task2).then(task2).then(task2)// bindでtask1に引数iを渡す
+       console.log('finished!');
+       console.log(self.array_data);
+       });   
+ 
+ 
+//****************************** 
+
+async function looperas(val) {
+       console.log(val);
+       let a=0;      
+       while (val[2]>5){
+        await task3();
+       }
+
+      let task3 = (val) => {
+       Ref.orderByChild('num').startAt(val[0]).endAt(val[0]).once('value',function(snapshot){
+      let getarraydata=Object.values(snapshot.val());
+       console.log(val[0]);
+       val[0]++;       
+       val[1]=val[1].concat(getarraydata);
+       if (getarraydata[0].dataflag===0){val[2]++};
+       console.log(val[1]); 
+      })  
+     }
+       }
+        
+//***************************** 
+
+
+function looperUnit(val){
+  return new Promise(function(resolve, reject) {
+        console.log('looperUnit');
+        console.log(val);
+        if (val[2]<5){
+          console.log('looperUnit-Bunki1');
+          //myPromise.then(looper).then(looperUnit)
+          looper(val).then(looperUnit);
+        } else {
+          resolve(val);
+        }
+      })         
+  }
+   
+function looper(val) {
+  return new Promise(function(resolve, reject) {
+       console.log(val);
+       let a=0;      
+       Ref.orderByChild('num').startAt(val[0]).endAt(val[0]).once('value',function(snapshot){
+      let getarraydata=Object.values(snapshot.val());
+       console.log(val[0]);
+       val[0]++;       
+       val[1]=val[1].concat(getarraydata);
+       if (getarraydata[0].dataflag===0){val[2]++};
+       console.log(val[1]); 
+       resolve(val);
+    })
+  })
+ }
      
+
+
+
+/* function loopUnit(val) {
+  return new Promise(function(resolve, reject) {
+    resolve(val)
+  })
+}
+
+function looper(val) {
+  return new Promise(function(resolve, reject) {
+    // 永久ループにならないように限界条件を入れる (optional)
+    console.log(val);
+    if (val[2]>100) {
+      resolve(val);
+      return
+    }
+    // ループ処理
+    let a=0;      
+       Ref.orderByChild('num').startAt(val[0]).endAt(val[0]).once('value',function(snapshot){
+      let getarraydata=Object.values(snapshot.val());
+       console.log(val[0]);
+       val[0]++;       
+       val[1]=val[1].concat(getarraydata);
+       if (getarraydata[0].dataflag===0){val[2]++};
+       console.log(val[1]);
+       //looper(val);       
+    })
+    loopUnit(val).then(function(val) {
+      console.log(val);
+      if ( val[2]<5 ) {
+        myPromise.then(looper)
+      } else {
+        
+        resolve(val)
+      }
+    })
+  }) 
+}
+
+//looper();
+
+/*
+
+
+
+
+      
+      //for(var i = 1; i <= 4; i++) {
+     /* 
+      myPromise = myPromise.then((val)=>{
+        console.log(val);
+        console.log(self.$store.state.maxpage);
+        task2;
+        //if ((val[0]<self.$store.state.maxpage)||(val[2]<5)){task2()}
+        //else {resolve(val)};
+      });
+      //};
+
+       myPromise.then((val)=>{
+       self.array_data=val[1];
+       });
+      
+     */
 
 
 // ループで実行する処理
-       function task1(val){ // 引数iを受け取る
+       function task1(val){ // 引数pageを受け取る
        return new Promise(function(resolve, reject) {
       let a=0;      
       Ref.orderByChild('num').startAt(val).endAt(val).once('value',function(snapshot){
       let getarraydata=Object.values(snapshot.val());
        console.log(val);
        val++; 
-       a=getarraydata[0].dataflag;
+       if (getarraydata[0].dataflag===0){a++};
 
        console.log(getarraydata);
        console.log(getarraydata[0].dataflag);
-       resolve([val,getarraydata]);
+       resolve([val,getarraydata,a]);
         })          
       }); 
      }
       
-      function task2(val){ // 引数iを受け取る
-       return new Promise(function(resolve, reject) {
-       let a=0;       
+        function task2(val){ // 引数[val,getarraydata]を受け取る
+       return new Promise(function(resolve, reject) {     
         Ref.orderByChild('num').startAt(val[0]).endAt(val[0]).once('value',function(snapshot){
       let getarraydata=Object.values(snapshot.val());
        console.log(val[0]);
        val[0]++;       
        val[1]=val[1].concat(getarraydata);
-       console.log(getarraydata[0].dataflag);
+       if (getarraydata[0].dataflag===0){val[2]++};
        console.log(val[1]);
        resolve(val);       
         })      
       }); 
      }
+    
+    
       
     
      };

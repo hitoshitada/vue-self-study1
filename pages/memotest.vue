@@ -12,6 +12,8 @@
           <td>{{ $store.state.pagecount }}</td>
           <td @click="this.pagePlus">nextPage</td>
           <td @click="this.pageReset_num">Reset</td>
+          <td v-if="this.data_mode===true" @click="this.modechange">Delete</td>
+          <td v-if="this.data_mode===false" @click="this.modechange">Normal</td>
         </tr> 
       </table>  
   <hr>
@@ -47,9 +49,10 @@ export default{
           message:'テキストメモ。投稿の一覧表示ページ',
           msg:'',
           page:0,
-          num_per_page:5,
+          num_per_page:5, //1ページ当たりの表示数
           array_data:[],
-          maxpagedata:0,
+          maxpagedata:0,//firebaseに登録されているデータの最後のページ数
+          data_mode:true,//通常のデータはtrue,ゴミ箱に入ったデータはfalse
        };
      },
     computed: mapState(['pagecount','status','maxpage']),  
@@ -129,13 +132,7 @@ export default{
        console.log('finished!');
        console.log(self.array_data);
       })
-      /*
-      myPromise.then((val)=>{
-       self.array_data=val[1];
-       console.log('finished!');
-       console.log(self.array_data);
-       });   
-      */
+      
  
 //****************************** 
 
@@ -148,7 +145,7 @@ async function looperas(val) {
        let getarraydata=Object.values(snapshot.val());
        console.log(val[0]);
        val[0]++;             
-       if (getarraydata[0].dataflag===0){
+       if (getarraydata[0].dataflag===self.data_mode){
          val[2]++;
        val[1]=val[1].concat(getarraydata);
        }
@@ -160,61 +157,28 @@ async function looperas(val) {
 //***************************** 
 
 
-function looperUnit(val){
-  return new Promise(function(resolve, reject) {
-        console.log('looperUnit');
-        console.log(val);
-        console.log('val[0]'+val[0]+':maxpage'+self.$store.state.maxpage);
-        if ((val[2]<5)&&(val[0]<self.$store.state.maxpage+1)){
-          console.log('looperUnit-Bunki1');
-          looper(val).then(looperUnit);
-        } else {
-          task4(val);
-        }
-      })         
-  }
+
    
-function looper(val) {
-  return new Promise(function(resolve, reject) {
-       console.log(val);  
-       Ref.orderByChild('num').startAt(val[0]).endAt(val[0]).once('value',function(snapshot){
-      let getarraydata=Object.values(snapshot.val());
-       console.log(val[0]);
-       val[0]++;       
-       
-       if (getarraydata[0].dataflag===0){
-         val[2]++;
-         val[1]=val[1].concat(getarraydata);
-       }
-       console.log(val[1]); 
-       resolve(val);
-    })
-  })
- }
- 
- let task4 = (val) => {
-   return new Promise(function(resolve, reject) {
-       self.array_data=val[1];
-       console.log('finished!');
-       console.log(self.array_data);
-       resolve();
-  })
- }
 
        function task1(val){ // 引数pageを受け取る
        return new Promise(function(resolve, reject) {
       
       let a=0;      
+      console.log(self);
+      console.log(self.data_mode);
       Ref.orderByChild('num').startAt(val).endAt(val).once('value',function(snapshot){
       let getarraydata=Object.values(snapshot.val());
        console.log(val);
+       console.log(getarraydata[0].dataflag);
+       console.log(self.data_mode);
+       console.log(getarraydata[0].dataflag===self.data_mode);
        val++; 
-       if (getarraydata[0].dataflag===0){
+       if (getarraydata[0].dataflag===self.data_mode){
          a++
          } else {getarraydata=[];}
 
        console.log(getarraydata);
-       //console.log(getarraydata[0].dataflag);
+       
        resolve([val,getarraydata,a]);
         })          
       }); 
@@ -223,6 +187,12 @@ function looper(val) {
      };
       retpagedata();
     },
+
+    modechange: function(){
+      this.data_mode=!this.data_mode;
+      this.pageRead();
+    },
+
     select:function(key){
     this.$store.dispatch('pageset',key+this.$store.state.pagecount);
     this.$router.push('/edit');

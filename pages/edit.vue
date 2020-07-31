@@ -51,7 +51,7 @@ import { mapState, mapActions ,mapMutations } from 'vuex';
       contentSave: "",
       maxpagedata: 0,
       maxpagedata2:0,
-      dataflag:0,
+      dataflag:1,
    };
   },
   computed: mapState(['pagecount','status','maxpage']),  //pagecountを同じ変数でマッピングする
@@ -162,6 +162,7 @@ import { mapState, mapActions ,mapMutations } from 'vuex';
       + ':'+("00"+d.getMinutes()).slice(-2) + ':' + ("00"+d.getSeconds()).slice(-2);
       let id = this.$store.state.pagecount;
       let data = {
+        dataflag:true,
         msg:this.content,
         num:this.$store.state.pagecount,
         posted:dstr,
@@ -183,6 +184,7 @@ import { mapState, mapActions ,mapMutations } from 'vuex';
       + ':'+("00"+d.getMinutes()).slice(-2) + ':' + ("00"+d.getSeconds()).slice(-2);
       let id = parseInt(this.$store.state.maxpage)+1;
       let data = {
+        dataflag:true,
         msg:"message"+id,
         num:id,
         posted:dstr,

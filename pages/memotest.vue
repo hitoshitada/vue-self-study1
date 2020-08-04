@@ -12,23 +12,41 @@
           <td>{{ $store.state.pagecount }}</td>
           <td @click="this.pagePlus">nextPage</td>
           <td @click="this.pageReset_num">Reset</td>
-          <td v-if="this.data_mode===true" @click="this.modechange">Delete</td>
-          <td v-if="this.data_mode===false" @click="this.modechange">Normal</td>
+          <td v-if="this.data_mode===true" @click="this.modechange">Trush Box</td>
+          <td v-if="this.data_mode===false" @click="this.modechange">Out Trush Box</td>
         </tr> 
       </table>  
   <hr>
-  
-   <ul v-for="(data,key) in array_data">
+    </div>
+
+   <div v-if="this.data_mode===true">
+    <ul v-for="(data,key) in array_data">
      <li>
        <tr>
+      <div class="list1">
       <td>{{parseInt($store.state.pagecount)+key}}</td>
-     <td @click="select(key)" class="list1">{{data.title}}</td>
-     <td><button class="delete1" @click="del(key)">削除</button></td>
+     <td @click="select(key)">{{data.title}}</td>
+     <td><button class="trash" @click="trash(key)">ゴミ箱へ</button></td>
+     </div>
        </tr>
      <div class="list2">{{data.posted}}</div>
      </li>
    </ul>
-  
+   </div>
+   <div v-else>
+      <ul v-for="(data,key) in array_data">
+    <li>
+       <tr>
+　　　　<div class='list1-r'>
+      <td>{{parseInt($store.state.pagecount)+key}}</td>
+     <td @click="select(key)">{{data.title}}</td>
+     </div>
+      <td><button class="restore" @click="trash(key)">復帰</button></td>
+     <td><button class="delete1" @click="del(key)">消去</button></td>
+       </tr>
+     <div class="list2">{{data.posted}}</div>
+     </li>
+   </ul>
    </div>
   </section>
 </template>
@@ -192,6 +210,30 @@ async function looperas(val) {
       this.data_mode=!this.data_mode;
       this.pageRead();
     },
+    trash: async function(key){
+      let result=true;
+     if (this.data_mode===true){
+         result = window.confirm('このページをゴミ箱に移しますか？');
+       } else {
+         result = window.confirm('このページをゴミ箱から戻しますか？'); 
+       }
+     if (result==false){
+        return
+      }
+      let Ref=firebase.database().ref('fire-memo');
+      let self=this;
+      console.log(this.array_data[key].num);
+     
+      await Ref.orderByChild('num').startAt(this.array_data[key].num).endAt(this.array_data[key].num).once('value',function(snapshot){
+      let keyData=Object.keys(snapshot.val());
+      console.log(snapshot.val());
+      console.log(keyData[0]);
+      console.log(self.data_mode);
+      firebase.database().ref('fire-memo/'+keyData[0]).update({dataflag:!self.data_mode});
+      })  
+      
+      this.pageRead();
+    },
 
     select:function(key){
     this.$store.dispatch('pageset',key+this.$store.state.pagecount);
@@ -216,11 +258,38 @@ async function looperas(val) {
   text-align: left;
   font-size: 16pt;
   cursor: pointer;
+  color:black;
 }
+.list1-r {
+  text-align: left;
+  font-size: 16pt;
+  cursor: pointer;
+  color:red;
+}
+
+
 .list2 {
   text-align: right;
   font-size: 10pt;
   
+}
+.trash {
+  position: relative;
+  width:80px;
+  height:35px;
+  top:50%;
+  left:50%;
+  margin-left: 200px;
+  margin-top: 0px;
+  right: 20px;
+  cursor: pointer;
+  appearance: none;
+  border: 0;
+  border-radius: 5px;
+  background: purple;
+  color: #fff;
+  padding: 4px 16px;
+  font-size: 12px;
 }
 .delete1 {
   position: relative;
@@ -235,11 +304,31 @@ async function looperas(val) {
   appearance: none;
   border: 0;
   border-radius: 5px;
-  background: #4676D7;
+  background: red;
   color: #fff;
   padding: 4px 16px;
   font-size: 12px;
 }
+.restore {
+  position: relative;
+  width:80px;
+  height:35px;
+  top:50%;
+  left:50%;
+  margin-left: 200px;
+  margin-top: 0px;
+  right: 20px;
+  cursor: pointer;
+  appearance: none;
+  border: 0;
+  border-radius: 5px;
+  background:blue;
+  color: #fff;
+  padding: 4px 16px;
+  font-size: 12px;
+}
+
+
 h1 {
   font-size: 60pt;
   color: #345980;

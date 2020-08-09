@@ -13,7 +13,11 @@
           <td @click="this.dispReset">Reset</td>
           <td @click="this.saveData">SaveData</td>
           <td @click="this.addPage">AddPage</td>
+          <td>&nbsp;&nbsp;&nbsp;Input Page (1 to {{maxpagedata}})=></td>
+          <textarea class="inputText" cols="4" rows="1" input type="text" v-model="datanum"></textarea>
+          <td><input type="submit" value="MovePage" class="button1" @click="this.movePage"></td>
        </tr>
+        
       </table>
       <table>
         <tr>
@@ -52,6 +56,7 @@ import { mapState, mapActions ,mapMutations } from 'vuex';
       maxpagedata: 0,
       maxpagedata2:0,
       dataflag:1,
+      datanum:0,
    };
   },
   computed: mapState(['pagecount','status','maxpage']),  //pagecountを同じ変数でマッピングする
@@ -194,9 +199,21 @@ import { mapState, mapActions ,mapMutations } from 'vuex';
         this.$store.dispatch('pageinSetMaxpage',id);
         this.getMaxpage();
         this.pageDisp();
-
     },
-    
+    movePage: function(){
+       /*let result = window.confirm('ページを移動します。データを保存してますか？');
+       if (result==false){
+        return
+      }
+      */
+      if (0<parseInt(this.datanum) && parseInt(this.datanum)<=this.maxpagedata){
+        this.$store.dispatch('pageset',parseInt(this.datanum));
+         this.pageDisp();
+      } 
+ 
+
+
+    }, 
   
   }
     
@@ -243,6 +260,27 @@ textarea{
   font-size:14pt;
   margin:5px;
 }
+
+.inputText{
+resize: none;
+
+}
+.button1{
+  display: inline-block;
+  padding: 0em 0.5em;
+  text-decoration: none;
+  border-radius: 4px;
+  color: #ffffff;
+  background-image: linear-gradient(#6795fd 0%, #67ceff 100%);
+  box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.29);
+  border-bottom: solid 3px #5e7fca;
+}
+.button1:active {
+  transform: translateY(4px);
+  box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.2);
+  border-bottom: none;
+}
+
 .subtitle {
   font-weight: 300;
   font-size: 42px;

@@ -143,7 +143,6 @@ export default{
       let arraydata=[];
     
       let myPromise = Promise.resolve();
-      //myPromise=myPromise.then(task1.bind(this,page)).then(looper).then(looperUnit);
       myPromise=myPromise.then(task1.bind(this,page)).then(looperas).then((val)=>{ 
        console.log(val);
        self.array_data=val[1];
@@ -156,12 +155,14 @@ export default{
 
 async function looperas(val) {
        console.log(val);
+       console.log(self.$store.state.maxpage);
        let a=0;      
        while (val[2]<5){        
        if (val[0]>self.$store.state.maxpage){break;} 
        await Ref.orderByChild('num').startAt(val[0]).endAt(val[0]).once('value',function(snapshot){
-       let getarraydata=Object.values(snapshot.val());
        console.log(val[0]);
+       let getarraydata=Object.values(snapshot.val());
+       
        val[0]++;             
        if (getarraydata[0].dataflag===self.data_mode){
          val[2]++;
@@ -172,11 +173,7 @@ async function looperas(val) {
        }
       return val;
       }
-//***************************** 
-
-
-
-   
+//*****************************   
 
        function task1(val){ // 引数pageを受け取る
        return new Promise(function(resolve, reject) {
@@ -234,6 +231,38 @@ async function looperas(val) {
       
       this.pageRead();
     },
+
+    del:async function(key){
+     let result = window.confirm('データを完全に消去してもいいですか？');
+　　　if (result==false) {
+ 　　　　return
+     }
+     let Ref=firebase.database().ref('fire-memo');
+      let self=this;
+      console.log(this.array_data[key].num);
+      await Ref.orderByChild('num').startAt(this.array_data[key].num).endAt(this.array_data[key].num).once('value',function(snapshot){
+      let keyData=Object.keys(snapshot.val()); 
+      console.log(keyData);
+      firebase.database().ref('fire-memo/'+keyData[0]).remove();
+      });
+
+      for (let i=this.array_data[key].num+1;i<=this.maxpagedata;i++ )
+      {
+      await Ref.orderByChild('num').startAt(i).endAt(i).once('value',function(snapshot){
+      let keyData=Object.keys(snapshot.val()); 
+      let data=Object.values(snapshot.val());
+      console.log('num='+data[0].num);
+      console.log('new num='+(i-1));
+      console.log('key='+keyData[0]);
+      firebase.database().ref('fire-memo/'+keyData[0]).update({num:(i-1)});
+      });
+      }
+      this.getMaxpage();
+     this.pageRead();
+    },
+
+
+
 
     select:function(key){
     this.$store.dispatch('pageset',key+this.$store.state.pagecount);

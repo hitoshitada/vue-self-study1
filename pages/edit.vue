@@ -7,12 +7,12 @@
       <table>
 　　　　　<tr>
            <td class="margin10"><nuxt-link to="/memotest">Go to List</nuxt-link></td>
-          <td @click="this.dispMinus">prev</td>
+          <td class="numberDisp" @click="this.dispMinus">prev</td>
           <td>{{ pagecount }}</td>
-          <td @click="this.dispPlus">next</td>
-          <td @click="this.dispReset">Reset</td>
-          <td @click="this.saveData">SaveData</td>
-          <td @click="this.addPage">AddPage</td>
+          <td class="numberDisp" @click="this.dispPlus">next</td>
+          <td class="numberDisp" @click="this.dispReset">Reset</td>
+          <td class="numberDisp" @click="this.saveData">SaveData</td>
+          <td class="numberDisp" @click="this.addPage">AddPage</td>
           <td>&nbsp;&nbsp;&nbsp;Input Page (1 to {{maxpagedata}})=></td>
           <textarea class="inputText" cols="4" rows="1" input type="text" v-model="datanum"></textarea>
           <td><input type="submit" value="MovePage" class="button1" @click="this.movePage"></td>
@@ -288,7 +288,16 @@ resize: none;
   word-spacing: 5px;
   padding-bottom: 15px;
 }
-
+.numberDisp {
+  padding: 5px 10px;
+  background-color: #eef;
+  font-size: 14pt;
+  cursor: pointer;
+}
+.numberDisp:active {
+  transform: translateY(4px);
+  border: none;
+}
 .links {
   padding-top: 15px;
 }

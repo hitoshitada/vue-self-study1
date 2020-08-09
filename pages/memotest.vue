@@ -8,12 +8,14 @@
       
         <table>
        <tr>
-       <td @click="this.pageMinus">prevPage</td>
+       <td class="numberDisp" @click="this.pageMinus">prevPage</td>
           <td>{{ $store.state.pagecount }}</td>
-          <td @click="this.pagePlus">nextPage</td>
-          <td @click="this.pageReset_num">Reset</td>
-          <td v-if="this.data_mode===true" @click="this.modechange">Trush Box</td>
-          <td v-if="this.data_mode===false" @click="this.modechange">Out Trush Box</td>
+          <td class="numberDisp" @click="this.pagePlus">nextPage</td>
+          <td class="numberDisp" @click="this.pageReset_num">Reset</td>
+          <td class="numberDisp" v-if="this.data_mode===true" @click="this.modechange">Trush Box</td>
+          <td class="numberDisp" v-if="this.data_mode===false" @click="this.modechange">Out Trush Box</td>
+          <td><input type="submit" value="Search" class="button2" @click="this.searchDisp"></td>
+          <textarea class="inputText" cols="40" rows="1" input type="text" v-model="searchData"></textarea>
         </tr> 
       </table>  
   <hr>
@@ -67,6 +69,7 @@ export default{
           message:'テキストメモ。投稿の一覧表示ページ',
           msg:'',
           page:0,
+          searchData:"",
           num_per_page:5, //1ページ当たりの表示数
           array_data:[],
           maxpagedata:0,//firebaseに登録されているデータの最後のページ数
@@ -261,13 +264,21 @@ async function looperas(val) {
      this.pageRead();
     },
 
-
-
-
     select:function(key){
     this.$store.dispatch('pageset',key+this.$store.state.pagecount);
     this.$router.push('/edit');
     },
+
+    searchDisp:function(){
+      let searchword=this.searchData;
+      //let kugiri =/(\s|　)+/
+　　　 let kugiri=/[, 　]+/ 
+      let array_words = searchword.split(kugiri);
+      console.log(array_words);
+    },
+
+
+
      }
 }
 </script>
@@ -357,6 +368,20 @@ async function looperas(val) {
   font-size: 12px;
 }
 
+.button2 {
+  padding: 5px 5px;
+  border: none;
+  outline: none;
+  font-size: 14pt;
+  color:black;
+  cursor: pointer;
+  
+}
+.button2:active {
+  transform: translateY(4px);
+  border: none;
+ 
+}
 
 h1 {
   font-size: 60pt;
@@ -387,11 +412,25 @@ tr th {
   color:white;
   font-size: 16pt;
 }
+
+.numberDisp {
+  padding: 5px 10px;
+  background-color: #eef;
+  font-size: 14pt;
+  cursor: pointer;
+}
+.numberDisp:active {
+  transform: translateY(4px);
+  border: none;
+}
+
 tr td {
   padding: 5px 10px;
   background-color: #eef;
   font-size: 14pt;
+
 }
+
 hr {
   margin: 10px 0px;
 }

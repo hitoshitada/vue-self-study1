@@ -156,24 +156,31 @@ import { mapState, mapActions ,mapMutations } from 'vuex';
     },
 
 
-    saveData: function(){
+    saveData:async function(){
      let result = window.confirm('このページのデータをSAVEしてもいいですか？'); 
      if (result==false) {
  　　　　return
    　　}
+      let self = this;
+      let page = self.$store.state.pagecount;
     　let Ref=firebase.database().ref('fire-memo'); 
+      await Ref.orderByChild('num').equalTo(page).once('value',function(snapshot){
+
+
       let d= new Date();
       let dstr = d.getFullYear()+'-'+("00"+(d.getMonth()+1)).slice(-2) + '-' + ("00"+d.getDate()).slice(-2) + ' ' +("00"+d.getHours()).slice(-2) 
       + ':'+("00"+d.getMinutes()).slice(-2) + ':' + ("00"+d.getSeconds()).slice(-2);
-      let id = this.$store.state.pagecount;
+      
+      let id = Object.keys(snapshot.val());
       let data = {
         dataflag:true,
-        msg:this.content,
-        num:this.$store.state.pagecount,
+        msg:self.content,
+        num:self.$store.state.pagecount,
         posted:dstr,
-        title:this.title,
+        title:self.title,
       };
       firebase.database().ref('fire-memo/'+id).set(data);     
+      });
       this.titleSave=this.title;
       this.contentSave=this.content;
 

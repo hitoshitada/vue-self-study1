@@ -320,7 +320,6 @@ async function looperas(val) {
       //console.log(getMsg);
       let indexTitle="";
       let indexMsg="";
-      //self.array_words.forEach(element => {
         let regelement=new RegExp(self.searchWordreg,'i');
         indexTitle=regelement.test(getTitle);
         indexMsg=regelement.test(getMsg);

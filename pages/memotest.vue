@@ -14,8 +14,13 @@
           <td class="numberDisp" @click="this.pageReset_num">Reset</td>
           <td class="numberDisp" v-if="this.data_mode===true" @click="this.modechange">Trush Box</td>
           <td class="numberDisp" v-if="this.data_mode===false" @click="this.modechange">Out Trush Box</td>
+          <td><input type="text"  class="inputText" size="32"  v-model="searchData"></td>
+          <td class="numberDisp" @click="this.serchModeChange">
+          <div v-if="this.search_mode==true">AND</div>
+          <div v-else>OR</div>
+          </td>
           <td><input type="submit" value="Search" class="button2" @click="this.searchDisp"></td>
-          <textarea class="inputText" cols="40" rows="1" input type="text" v-model="searchData"></textarea>
+          <td><input type="submit" value="Clear" class="button2" @click="this.searchClear"></td>
         </tr> 
       </table>  
   <hr>
@@ -26,7 +31,8 @@
      <li>
        <tr>
       <div class="list1">
-      <td>{{parseInt($store.state.pagecount)+key}}</td>
+      <!--<td>{{parseInt($store.state.pagecount)+key}}</td>-->
+     <td>{{data.num}}</td>
      <td @click="select(key)">{{data.title}}</td>
      <td><button class="trash" @click="trash(key)">ゴミ箱へ</button></td>
      </div>
@@ -40,7 +46,8 @@
     <li>
        <tr>
 　　　　<div class='list1-r'>
-      <td>{{parseInt($store.state.pagecount)+key}}</td>
+      <!--<td>{{parseInt($store.state.pagecount)+key}}</td>-->
+      <td>{{data.num}}</td>
      <td @click="select(key)">{{data.title}}</td>
      </div>
       <td><button class="restore" @click="trash(key)">復帰</button></td>
@@ -74,6 +81,9 @@ export default{
           array_data:[],
           maxpagedata:0,//firebaseに登録されているデータの最後のページ数
           data_mode:true,//通常のデータはtrue,ゴミ箱に入ったデータはfalse
+          //array_words:[],
+          searchWordreg:"",
+          search_mode:true,
        };
      },
     computed: mapState(['pagecount','status','maxpage']),  
@@ -268,19 +278,75 @@ async function looperas(val) {
     this.$store.dispatch('pageset',key+this.$store.state.pagecount);
     this.$router.push('/edit');
     },
-
-    searchDisp:function(){
-      let searchword=this.searchData;
-      //let kugiri =/(\s|　)+/
-　　　 let kugiri=/[, 　]+/ 
-      let array_words = searchword.split(kugiri);
-      console.log(array_words);
+    searchClear:function(){
+      this.searchData="";
+    },
+    serchModeChange:function(){
+      this.search_mode=!this.search_mode;
     },
 
 
+    searchDisp:async function(){
+      
+       let self = this;
+      let searchword=this.searchData.trim();
+　　　 let kugiri=/[, 　]+/g;
+      
+      if (this.search_mode===true){
+      this.searchWordreg='^(?=.*'+searchword.split(kugiri).join(')(?=.*')+')';
+      console.log(this.searchWordreg);
+      } else {
+      this.searchWordreg = searchword.replace(kugiri,'|');
+      console.log(this.searchWordreg);
+      if (this.seachWordreg===""){return};
+      }
+      console.log(this.searchWordreg);
+
+       let Ref=firebase.database().ref('fire-memo');
+     
+      let page = self.$store.state.pagecount;
+      let maxpage = self.maxpagedata;
+      self.array_data=[];
+      let arraydata=[];
+      
+      while (arraydata.length<5){
+     
+      await Ref.orderByChild('num').startAt(page).endAt(page).once('value',function(snapshot){
+      let getarraydata=Object.values(snapshot.val());
+      let getTitle=getarraydata[0].title;
+      let getMsg=getarraydata[0].msg;
+      let getDataflag=getarraydata[0].dataflag;
+      //console.log(typeof getTitle);
+      //console.log(getMsg);
+      let indexTitle="";
+      let indexMsg="";
+      //self.array_words.forEach(element => {
+        let regelement=new RegExp(self.searchWordreg,'i');
+        indexTitle=regelement.test(getTitle);
+        indexMsg=regelement.test(getMsg);
+        console.log(indexTitle);
+        console.log(indexMsg);
+        //console.log(getDataflag);
+        //console.log(self.data_mode);
+        //console.log(getDataflag===self.data_mode);
+        if ((indexTitle||indexMsg)&&(getDataflag===self.data_mode)){
+          arraydata=arraydata.concat(getarraydata);
+        }
+        console.log(arraydata);
+        self.array_data=arraydata;
+      //});　
+      })
+      page++;
+      console.log(self.array_data);
+      if (page>self.maxpagedata){break;}      
+      }
+       
+      },
+　　　　
+    },
 
      }
-}
+
 </script>
 
 

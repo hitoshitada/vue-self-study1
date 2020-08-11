@@ -14,7 +14,7 @@
           <td class="numberDisp" @click="this.saveData">SaveData</td>
           <td class="numberDisp" @click="this.addPage">AddPage</td>
           <td>&nbsp;&nbsp;&nbsp;Input Page (1 to {{maxpagedata}})=></td>
-          <textarea class="inputText" cols="4" rows="1" input type="text" v-model="datanum"></textarea>
+          <td><input type="text"  class="inputText" size="4"  v-model="datanum"></td>
           <td><input type="submit" value="MovePage" class="button1" @click="this.movePage"></td>
        </tr>
         

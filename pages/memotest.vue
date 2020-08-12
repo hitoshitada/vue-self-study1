@@ -33,8 +33,8 @@
       <div class="list1">
       <!--<td>{{parseInt($store.state.pagecount)+key}}</td>-->
      <td>{{data.num}}</td>
-     <td @click="select(key)">{{data.title}}</td>
-     <td><button class="trash" @click="trash(key)">ゴミ箱へ</button></td>
+     <td @click="select(data.num)">{{data.title}}</td>
+     <td><button class="trash" @click="trash(data.num)">ゴミ箱へ</button></td>
      </div>
        </tr>
      <div class="list2">{{data.posted}}</div>
@@ -48,10 +48,10 @@
 　　　　<div class='list1-r'>
       <!--<td>{{parseInt($store.state.pagecount)+key}}</td>-->
       <td>{{data.num}}</td>
-     <td @click="select(key)">{{data.title}}</td>
+     <td @click="select(data.num)">{{data.title}}</td>
      </div>
-      <td><button class="restore" @click="trash(key)">復帰</button></td>
-     <td><button class="delete1" @click="del(key)">消去</button></td>
+      <td><button class="restore" @click="trash(data.num)">復帰</button></td>
+     <td><button class="delete1" @click="del(data.num)">消去</button></td>
        </tr>
      <div class="list2">{{data.posted}}</div>
      </li>
@@ -81,7 +81,6 @@ export default{
           array_data:[],
           maxpagedata:0,//firebaseに登録されているデータの最後のページ数
           data_mode:true,//通常のデータはtrue,ゴミ箱に入ったデータはfalse
-          //array_words:[],
           searchWordreg:"",
           search_mode:true,
        };
@@ -220,7 +219,7 @@ async function looperas(val) {
       this.data_mode=!this.data_mode;
       this.pageRead();
     },
-    trash: async function(key){
+    trash: async function(number){
       let result=true;
      if (this.data_mode===true){
          result = window.confirm('このページをゴミ箱に移しますか？');
@@ -232,9 +231,9 @@ async function looperas(val) {
       }
       let Ref=firebase.database().ref('fire-memo');
       let self=this;
-      console.log(this.array_data[key].num);
+      
      
-      await Ref.orderByChild('num').startAt(this.array_data[key].num).endAt(this.array_data[key].num).once('value',function(snapshot){
+      await Ref.orderByChild('num').equalTo(number).once('value',function(snapshot){
       let keyData=Object.keys(snapshot.val());
       console.log(snapshot.val());
       console.log(keyData[0]);
@@ -245,21 +244,21 @@ async function looperas(val) {
       this.pageRead();
     },
 
-    del:async function(key){
+    del:async function(number){
      let result = window.confirm('データを完全に消去してもいいですか？');
 　　　if (result==false) {
  　　　　return
      }
      let Ref=firebase.database().ref('fire-memo');
       let self=this;
-      console.log(this.array_data[key].num);
-      await Ref.orderByChild('num').startAt(this.array_data[key].num).endAt(this.array_data[key].num).once('value',function(snapshot){
+      
+      await Ref.orderByChild('num').equalTo(number).once('value',function(snapshot){
       let keyData=Object.keys(snapshot.val()); 
       console.log(keyData);
       firebase.database().ref('fire-memo/'+keyData[0]).remove();
       });
 
-      for (let i=this.array_data[key].num+1;i<=this.maxpagedata;i++ )
+      for (let i=number+1;i<=this.maxpagedata;i++ )
       {
       await Ref.orderByChild('num').startAt(i).endAt(i).once('value',function(snapshot){
       let keyData=Object.keys(snapshot.val()); 
@@ -274,8 +273,9 @@ async function looperas(val) {
      this.pageRead();
     },
 
-    select:function(key){
-    this.$store.dispatch('pageset',key+this.$store.state.pagecount);
+    select:function(number){
+
+    this.$store.dispatch('pageset',number);
     this.$router.push('/edit');
     },
     searchClear:function(){

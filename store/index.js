@@ -58,7 +58,7 @@ export const mutations = {
     }
   },
   pageIncrease(state,perpage){
-    if (state.pagecount+perpage<state.maxpage){
+    if (state.pagecount+perpage<=state.maxpage){
       state.pagecount=state.pagecount+perpage;
     } 
   },

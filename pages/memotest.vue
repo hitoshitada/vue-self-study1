@@ -14,13 +14,18 @@
           <td class="numberDisp" @click="this.pageReset_num">Reset</td>
           <td class="numberDisp" v-if="this.data_mode===true" @click="this.modechange">Trush Box</td>
           <td class="numberDisp" v-if="this.data_mode===false" @click="this.modechange">Out Trush Box</td>
-          <td><input type="text"  class="inputText" size="32"  v-model="searchData"></td>
-          <td class="numberDisp" @click="this.serchModeChange">
-          <div v-if="this.search_mode==true">AND</div>
-          <div v-else>OR</div>
-          </td>
-          <td><input type="submit" value="Search" class="button2" @click="this.searchDisp"></td>
-          <td><input type="submit" value="Clear" class="button2" @click="this.searchClear"></td>
+          <td v-if="this.search_maxpage===false"><input type="text"  class="inputText" size="32"  v-model="searchData"></td>
+          <td v-if="this.search_maxpage===true"><input type="text" class="inputText" size="32"  v-model="searchData" readonly></td>
+          <div v-if="this.search_maxpage===false">
+          <td @click="this.serchModeChange">
+          <div v-if="this.search_mode===true" class="numberDisp">AND</div>
+          <div v-else class="numberDisp">OR</div>
+          </td></div>
+          <td v-if="this.search_maxpage===true" class="numberDisp" @click="this.searchEnd">Stop Search</td>  
+          <td v-if="this.search_maxpage===false"><input type="submit" class="button2" value="Search" @click="this.searchDisp"></td>       
+          <td v-if="this.search_maxpage===true"><input type="submit" class="button3" value="Search next" @click="this.searchDisp"></td>
+          <td v-if="this.search_maxpage===false"><input type="submit" value="Clear" class="button2" @click="this.searchClear"></td>
+        
         </tr> 
       </table>  
   <hr>
@@ -57,6 +62,7 @@
      </li>
    </ul>
    </div>
+   <p v-if="this.array_data.length===0" class="message">There is no DATA.</p>
   </section>
 </template>
 
@@ -83,6 +89,8 @@ export default{
           data_mode:true,//通常のデータはtrue,ゴミ箱に入ったデータはfalse
           searchWordreg:"",
           search_mode:true,
+          search_maxpage:false,
+          search_page:0,
        };
      },
     computed: mapState(['pagecount','status','maxpage']),  
@@ -103,14 +111,17 @@ export default{
        ...mapMutations(['pageReset']),
 
        pagePlus: function(){
+         this.search_maxpage=false;
          this.$store.dispatch('pageIncrease',parseInt(this.num_per_page));
          this.pageRead();
        },
        pageMinus: function(){
+         this.search_maxpage=false;
          this.$store.dispatch('pageDecrease',parseInt(this.num_per_page));
          this.pageRead();
        },
        pageReset_num: function(){
+       this.search_maxpage=false;
        this.pageReset();
        this.pageRead();
        },
@@ -220,6 +231,7 @@ async function looperas(val) {
       this.pageRead();
     },
     trash: async function(number){
+      this.search_maxpage=false;
       let result=true;
      if (this.data_mode===true){
          result = window.confirm('このページをゴミ箱に移しますか？');
@@ -286,31 +298,50 @@ async function looperas(val) {
     },
 
 
-    searchDisp:async function(){
+   //検索実行メソッド
+    searchDisp:async function(){ 
       
-       let self = this;
+      
+      let self = this;
+
+      //キーワードを正規表現に置き換える関数*************
+　　　 let searchWordMake=() => {
       let searchword=this.searchData.trim();
 　　　 let kugiri=/[, 　]+/g;
-      
+      console.log(searchword);
+      if (searchword===""){return};
       if (this.search_mode===true){
       this.searchWordreg='^(?=.*'+searchword.split(kugiri).join(')(?=.*')+')';
       console.log(this.searchWordreg);
       } else {
       this.searchWordreg = searchword.replace(kugiri,'|');
       console.log(this.searchWordreg);
-      if (this.seachWordreg===""){return};
+      
       }
       console.log(this.searchWordreg);
-
-       let Ref=firebase.database().ref('fire-memo');
+     }
+     //キーワードを正規表現に置き換える関数終了************
      
-      let page = self.$store.state.pagecount;
+     
+     let page=0;
+　　　if (this.search_maxpage===false){
+     searchWordMake();
+     console.log(this.searchWordreg);
+     if (this.searchWordreg===""){return};
+     this.search_maxpage=true;
+     page = this.$store.state.pagecount;  
+     } else {
+     page=this.search_page;
+     }
+      
+      let Ref=firebase.database().ref('fire-memo');          
+
       let maxpage = self.maxpagedata;
-      self.array_data=[];
-      let arraydata=[];
+      self.array_data=[];//表示するデータの配列
+      let arraydata=[];//検索したデータを一時的に保管する配列
       
       while (arraydata.length<5){
-     
+
       await Ref.orderByChild('num').startAt(page).endAt(page).once('value',function(snapshot){
       let getarraydata=Object.values(snapshot.val());
       let getTitle=getarraydata[0].title;
@@ -337,11 +368,19 @@ async function looperas(val) {
       })
       page++;
       console.log(self.array_data);
-      if (page>self.maxpagedata){break;}      
+      if (page>=self.maxpagedata){
+        self.search_maxpage=false;      
+        break;}      
       }
-       
+       this.search_page=page;
+      
+
       },
-　　　　
+　　　　//検索実行メソッド終わり
+　　　searchEnd:function(){
+      this.search_maxpage=false;
+     },
+
     },
 
      }
@@ -443,6 +482,20 @@ async function looperas(val) {
   
 }
 .button2:active {
+  transform: translateY(4px);
+  border: none;
+ 
+}
+.button3 {
+  padding: 5px 5px;
+  border: none;
+  outline: none;
+  font-size: 14pt;
+  color:red;
+  cursor: pointer;
+  
+}
+.button3:active {
   transform: translateY(4px);
   border: none;
  
